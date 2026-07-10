@@ -1,0 +1,220 @@
+.wrapper {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.filterBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: #f8fafc;
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
+    align-items: center;
+}
+
+.searchInput {
+    flex: 2;
+    min-width: 200px;
+}
+
+.selectInput, .searchInput, .priceInputs input {
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.selectInput:focus, .searchInput:focus, .priceInputs input:focus {
+    border-color: #3b82f6;
+}
+
+.priceInputs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.priceInputs input {
+    width: 80px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.imagePlaceholder {
+    background: #f1f5f9;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.productImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.noImgText {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.cardContent {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.categoryBadge {
+    display: inline-block;
+    align-self: flex-start;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.productName {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.productDesc {
+    margin: 0 0 1.25rem 0;
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.4;
+    flex-grow: 1;
+}
+
+.cardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.price {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.addToCartButton {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.addToCartButton:hover:not(:disabled) {
+    background-color: #1d4ed8;
+}
+
+.addToCartButton:disabled {
+    background-color: #cbd5e1;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.pagButton {
+    background: white;
+    border: 1px solid #cbd5e1;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #475569;
+    transition: background 0.1s;
+}
+
+.pagButton:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.pagButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagInfo {
+    font-size: 0.95rem;
+    color: #475569;
+    font-weight: 500;
+}
+.cardHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.stockIndicator {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+}
+
+.inStock {
+    color: #16a34a;
+    background: #f0fdf4;
+}
+
+.outOfStock {
+    color: #dc2626;
+    background: #fef2f2;
+}

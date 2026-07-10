@@ -1,0 +1,41 @@
+import React, {createContext, useContext, useState, useEffect} from 'react';
+
+const AuthContext = createContext(null);
+
+export const AuthProvider = ({children}) => {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    useEffect(() =>  {
+        const token = localStorage.getItem('token');
+        if(token) {
+            try{
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setUser({email: payload.email, role: payload.role});
+            } catch(error) {
+                localStorage.removeItem('token');
+            }
+        }
+        setLoading(false);
+    }, []);
+
+    const login = (token) => {
+        localStorage.setItem('token', token);
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUser({email: payload.email, role: payload.role});
+    }
+    const logout = () => {
+        localStorage.removeItem('token');
+        setUser(null);
+    }
+    if(loading)
+    {
+        return <div>Loading application...</div>;
+    }
+    return (
+        <AuthContext.Provider value = {{user, login, logout}}>
+            {children}
+        </AuthContext.Provider>
+    )
+}
+
+export const useAuth = () => useContext(AuthContext);

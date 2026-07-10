@@ -1,0 +1,45 @@
+.wrapper {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+.status {
+    padding: 12px;
+    background: #edf2f7;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: white;
+    padding: 25px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+.form input, .form textarea {
+    padding: 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+.form textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+.form button {
+    padding: 14px;
+    background: #0070f3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+}
+.form button:hover {
+    background: #0051b3;
+}
