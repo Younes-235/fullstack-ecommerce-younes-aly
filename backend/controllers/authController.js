@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const prisma = require("../config/db"); 
+const prisma = require("../config/db")
+const sendWelcomeEmail = require("../utils/welcomeEmail");
 
 exports.login = async (req, res) => {
     try {
@@ -29,7 +30,7 @@ exports.login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role },
+            { id: user.id, email: user.email, role: user.role , name:user.name},
             process.env.JWT_SECRET || "fallback_secret",
             { expiresIn: "24h" }
         );
@@ -42,9 +43,10 @@ exports.login = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
+
 exports.register = async (req, res) => {
     try {
-        const { email, password, role } = req.body;
+        const { name, email, password, role } = req.body;
 
         const cleanEmail = email.toLowerCase().trim();
 
@@ -57,17 +59,23 @@ exports.register = async (req, res) => {
                 message: "This email address is already registered. Please log in instead." 
             });
         }
+        
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
+        
         const newUser = await prisma.user.create({
             data: {
+                name: name,
                 email: cleanEmail,
                 password: hashedPassword,
                 role: role || "USER"
             }
         });
+
+        sendWelcomeEmail(newUser.email, newUser.name);
+
         const token = jwt.sign(
-            { id: newUser.id, email: newUser.email, role: newUser.role },
+            { id: newUser.id, email: newUser.email, role: newUser.role , name:newUser.name},
             process.env.JWT_SECRET || "fallback_secret",
             { expiresIn: "24h" }
         );
@@ -78,4 +86,4 @@ exports.register = async (req, res) => {
         console.error("Registration error:", error);
         return res.status(500).json({ message: "An unexpected error occurred during registration" });
     }
-};   
+};

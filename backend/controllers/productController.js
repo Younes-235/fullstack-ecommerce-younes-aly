@@ -1,9 +1,7 @@
 const prisma = require('../config/db.js');
-const {createClient} = require("@supabase/supabase-js");
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+const fs = require('fs');
+const path = require('path');
+const Feedback = require('../models/Feedback.js'); 
 
 exports.getAllProducts = async (req, res) => {
     try {
@@ -79,63 +77,109 @@ exports.getCategories = async (req, res) => {
         res.status(500).json({ error: "Failed to fetch category lists." });
     }
 };
-// //GET api/products/:id
 
 exports.getProductById = async (req, res) => {
-    try{
+    try {
         const product = await prisma.product.findUnique({
-            where: {id: parseInt(req.params.id)}
+            where: { id: parseInt(req.params.id) }
         });
-        if(!product){
-            return res.status(404).json({error: "Product not found"});
-        }
-        else{
+        if (!product) {
+            return res.status(404).json({ error: "Product not found" });
+        } else {
             res.status(200).json(product);
         }
-    } catch(error){
-        res.status(500).json({error: "Error retrieving product"});
+    } catch (error) {
+        res.status(500).json({ error: "Error retrieving product" });
     }
-}
+};
 
-// // POST api/products
 exports.createProduct = async (req, res) => {
     try {
         const { name, description, price, category, stock } = req.body;
         let imageUrl = null;
 
         if (req.file) {
-            const fileName = `${Date.now()}-${req.file.originalname}`;
-
-            const { data, error } = await supabase.storage
-                .from('product-images')
-                .upload(fileName, req.file.buffer, {
-                    contentType: req.file.mimetype,
-                    upsert: true
-                });
-
-            if (error) throw error;
-
-            const { data: publicUrlData } = supabase.storage
-                .from('product-images')
-                .getPublicUrl(fileName);
-
-            imageUrl = publicUrlData.publicUrl;
+            imageUrl = `/uploads/${req.file.filename}`;
         }
 
         const newProduct = await prisma.product.create({
             data: {
                 name, 
                 description,
-                price: parseFloat(price),
+                price: parseFloat(price), 
                 category,
-                stock: parseInt(stock),
+                stock: parseInt(stock, 10), 
                 imageUrl 
             }
         });
         
         res.status(201).json({ message: "Product added successfully", product: newProduct });
     } catch (error) {
-        console.error(error);
+        console.error("Error creating product:", error);
         res.status(400).json({ error: "Failed to create product. Check your fields." });
+    }
+};
+
+exports.updateProductStock = async (req, res) => {
+    try {
+        const productId = parseInt(req.params.id, 10);
+        const { stock } = req.body;
+
+        if (stock === undefined) {
+            return res.status(400).json({ error: "Stock value is required field." });
+        }
+
+        const updatedProduct = await prisma.product.update({
+            where: { id: productId },
+            data: {
+                stock: parseInt(stock, 10)
+            }
+        });
+
+        return res.status(200).json(updatedProduct);
+    } catch (error) {
+        console.error("Error inside updateProductStock handler:", error);
+        
+        if (error.code === 'P2025') {
+            return res.status(404).json({ error: "Product record not found in database." });
+        }
+        
+        return res.status(500).json({ error: "Failed to update product stock level." });
+    }
+};
+
+exports.deleteProduct = async (req, res, next) => {
+    try {
+        const productId = parseInt(req.params.id, 10);
+
+        const targetProduct = await prisma.product.findUnique({
+            where: { id: productId }
+        });
+
+        if (!targetProduct) {
+            return res.status(404).json({ error: "Product record not found in database." });
+        }
+
+        await prisma.cartItem.deleteMany({ 
+            where: { productId: productId } 
+        });
+
+        await prisma.orderItem.deleteMany({
+            where: { productId: productId }
+        });
+
+        await Feedback.deleteMany({ productId: productId });
+
+        const deletedProduct = await prisma.product.delete({
+            where: { id: productId }
+        });
+
+        return res.status(200).json({ 
+            message: "Product, cart entries, order records, and associated reviews deleted successfully.",
+            deletedProduct 
+        });
+    } catch (error) {
+        console.error("Error inside deleteProduct handler:", error);
+        next(error); 
     }
 };
