@@ -1,35 +1,115 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from "../api/axios.js";
 import styles from "./Cart.module.css";
 
 const Cart = () => {
-    const [cart, setCart] = useState(null);
-    useEffect(() => {
-        api.get("/cart")
-            .then(res => setCart(res.data))
-            .catch(error => console.error("Error pulling cart details", error));
-    }, []);
-    const handleCheckout = async () => {
-        try{
-            const orderItems = cart.items.map(item => ({
-                productId: item.productId,
-                quantity: item.quantity
-            }))
-            const response = await api.post("/orders", {items: orderItems});
+    const queryClient = useQueryClient();
+
+    const { data: cart, isLoading, isError } = useQuery({
+        queryKey: ['cart'],
+        queryFn: async () => {
+            const res = await api.get("/cart");
+            return res.data;
+        }
+    });
+
+    const updateQuantityMutation = useMutation({
+        mutationFn: async ({ productId, quantity }) => {
+            const res = await api.put(`/cart/${productId}`, { quantity });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cart'] });
+        },
+        onError: (error) => {
+            console.error("Backend update failure:", error.response?.data);
+            alert(error.response?.data?.error || "Could not update quantity.");
+        }
+    });
+
+    const removeItemMutation = useMutation({
+        mutationFn: async (productId) => {
+            const res = await api.delete(`/cart/${productId}`);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cart'] });
+        },
+        onError: (error) => {
+            console.error("Backend deletion failure:", error.response?.data);
+            alert(error.response?.data?.error || "Could not remove item.");
+        }
+    });
+
+    const checkoutMutation = useMutation({
+        mutationFn: async (orderItems) => {
+            const res = await api.post("/orders", { items: orderItems });
+            return res.data;
+        },
+        onSuccess: () => {
             alert("Checkout completely successful! Order recorded.");
-            setCart({items: []});
-        } catch(error) {
-            console.error("Backend error payload:", error.response?.data);
+            queryClient.invalidateQueries({ queryKey: ['cart'] });
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+            queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+        },
+        onError: (error) => {
+            console.error("Checkout submission failure:", error.response?.data);
             alert(error.response?.data?.error || "Checkout process failed.");
         }
+    });
+
+    const handleQuantityChange = (item, direction) => {
+        const currentQuantity = item.quantity;
+        const newQuantity = direction === 'plus' ? currentQuantity + 1 : currentQuantity - 1;
+
+        if (direction === 'plus' && item.product && newQuantity > item.product.stock) {
+            alert(`Cannot add more. Only ${item.product.stock} units available in stock.`);
+            return;
+        }
+
+        if (newQuantity < 1) {
+            removeItemMutation.mutate(item.productId);
+        } else {
+            updateQuantityMutation.mutate({ productId: item.productId, quantity: newQuantity });
+        }
+    };
+
+    const handleCheckout = () => {
+        if (!cart?.items) return;
+        const orderItems = cart.items.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity
+        }));
+        checkoutMutation.mutate(orderItems);
+    };
+
+    if (isLoading) {
+        return (
+            <div className={styles.container}>
+                <h3 className={styles.empty}>🛒 Loading your shopping cart...</h3>
+            </div>
+        );
     }
-    if(!cart || cart.items.length == 0)
-    {
-        return <div className={styles.container}>
-            <h3 className={styles.empty}>Your shopping cart is empty.</h3>
-        </div>;
+
+    if (isError) {
+        return (
+            <div className={styles.container}>
+                <h3 className={styles.empty}>Error loading cart. Please try logging back in.</h3>
+            </div>
+        );
     }
-    const total = cart.items.reduce((sum, item) => sum+(item.product.price*item.quantity), 0);
+
+    if (!cart || !cart.items || cart.items.length === 0) {
+        return (
+            <div className={styles.container}>
+                <h3 className={styles.empty}>Your shopping cart is empty.</h3>
+            </div>
+        );
+    }
+
+    const total = cart.items.reduce((sum, item) => sum + ((item.product?.price || 0) * item.quantity), 0);
+
     return (
         <div className={styles.container}>
             <h2 className={styles.title}>Your shopping cart</h2>
@@ -37,23 +117,58 @@ const Cart = () => {
                 {
                     cart.items.map(item => (
                         <div key={item.id} className={styles.item}>
-                            <div>
-                                <span className={styles.itemName}>{item.product.name}</span>
-                                <span className={styles.itemMeta}>Quantity: {item.quantity}</span>
+                            <div className={styles.itemDetails}>
+                                <span className={styles.itemName}>
+                                    {item.product?.name || "Product Unavailable"}
+                                </span>
+                                
+                                <div className={styles.quantityControls}>
+                                    <button 
+                                        className={styles.qtyBtn}
+                                        onClick={() => handleQuantityChange(item, 'minus')}
+                                        disabled={updateQuantityMutation.isPending || removeItemMutation.isPending}
+                                    >
+                                        -
+                                    </button>
+                                    <span className={styles.itemMeta}>{item.quantity}</span>
+                                    <button 
+                                        className={styles.qtyBtn}
+                                        onClick={() => handleQuantityChange(item, 'plus')}
+                                        disabled={updateQuantityMutation.isPending || removeItemMutation.isPending}
+                                    >
+                                        +
+                                    </button>
+                                </div>
                             </div>
-                            <span className={styles.price}>${(item.product.price*item.quantity).toFixed(2)}</span>
+                            
+                            <div className={styles.itemActions}>
+                                <span className={styles.price}>
+                                    ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                                </span>
+                                <button 
+                                    className={styles.removeButton}
+                                    onClick={() => removeItemMutation.mutate(item.productId)}
+                                    disabled={removeItemMutation.isPending}
+                                >
+                                    {removeItemMutation.isPending ? 'Removing...' : 'Remove'}
+                                </button>
+                            </div>
                         </div>
                     ))
                 }
                 <div className={styles.checkoutRow}>
                     <div className={styles.total}>Total: ${total.toFixed(2)}</div>
-                    <button onClick={handleCheckout} className={styles.checkoutButton}>
-                        Complete Order
+                    <button 
+                        onClick={handleCheckout} 
+                        className={styles.checkoutButton}
+                        disabled={checkoutMutation.isPending}
+                    >
+                        {checkoutMutation.isPending ? 'Processing...' : 'Complete Order'}
                     </button>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default Cart;

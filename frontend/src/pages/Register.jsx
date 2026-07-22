@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios.js';
 import styles from './Register.module.css';
 
 const Register = () => {
+    const queryClient = useQueryClient();
+    const [name, setName] = useState(''); 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('user'); 
@@ -17,7 +20,11 @@ const Register = () => {
         setSuccess('');
 
         try {
-            await api.post('/register', { email, password, role });
+            await api.post('/register', { name, email, password, role });
+            
+            queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+
             setSuccess('Account registered successfully! Redirecting to login...');
             
             setTimeout(() => {
@@ -35,6 +42,14 @@ const Register = () => {
             {success && <div className={styles.success}>{success}</div>}
             
             <form onSubmit={handleSubmit} className={styles.form}>
+                <input 
+                    type="text" 
+                    placeholder="Full Name" 
+                    value={name} 
+                    onChange={e => setName(e.target.value)} 
+                    required 
+                />
+                
                 <input 
                     type="email" 
                     placeholder="Email Address" 

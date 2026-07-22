@@ -1,0 +1,180 @@
+.container {
+    display: flex;
+    max-width: 1000px;
+    margin: 40px auto;
+    gap: 30px;
+    padding: 0 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.sidebar {
+    flex: 1;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    height: fit-content;
+}
+
+.avatarZone {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.avatar {
+    width: 70px;
+    height: 70px;
+    background: #0070f3;
+    color: white;
+    font-size: 2rem;
+    font-weight: 600;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+}
+
+.avatarZone h3 {
+    margin: 0 0 5px 0;
+    color: #1a202c;
+}
+
+.avatarZone p {
+    margin: 0;
+    color: #718096;
+    font-size: 0.85rem;
+}
+
+.menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu li {
+    padding: 10px 12px;
+    border-radius: 6px;
+    color: #4a5568;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+}
+
+.menu li:hover {
+    background: #f7fafc;
+}
+
+.activeItem {
+    background: #ebf8ff !important;
+    color: #2b6cb0 !important;
+    font-weight: 600;
+}
+
+.contentCard {
+    flex: 3;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 40px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.contentCard h2, .contentCard h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #1a202c;
+}
+
+.subtitle {
+    color: #718096;
+    font-size: 0.9rem;
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.formGroup label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.formGroup input {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.formGroup input:focus {
+    outline: none;
+    border-color: #0070f3;
+}
+
+.divider {
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+    margin: 15px 0;
+}
+
+.saveBtn {
+    padding: 12px;
+    background: #0070f3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    align-self: flex-start;
+    padding-left: 24px;
+    padding-right: 24px;
+    transition: background 0.2s;
+}
+
+.saveBtn:hover {
+    background: #0060d3;
+}
+
+.error {
+    color: #e53e3e;
+    background: #fff5f5;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.success {
+    color: #2f855a;
+    background: #f0fff4;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.loading {
+    text-align: center;
+    margin-top: 100px;
+    color: #718096;
+    font-family: system-ui, -apple-system, sans-serif;
+}

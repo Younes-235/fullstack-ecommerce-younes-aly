@@ -1,0 +1,114 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  font-family: system-ui, sans-serif;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.linksZone {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.navLink {
+  text-decoration: none;
+  color: #475569;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: #0f172a;
+}
+
+.adminLink {
+  text-decoration: none;
+  color: #7c3aed;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.adminLink:hover {
+  color: #6d28d9;
+}
+
+.authZone {
+  display: flex;
+  align-items: center;
+}
+
+.userStatus {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.welcomeText {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.welcomeText strong {
+  color: #1e293b;
+}
+
+.logoutButton {
+  padding: 8px 14px;
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.logoutButton:hover {
+  background-color: #dc2626;
+}
+
+.guestButtons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.loginLink {
+  text-decoration: none;
+  color: #2563eb;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.loginLink:hover {
+  text-decoration: underline;
+}
+
+.registerButton {
+  text-decoration: none;
+  padding: 8px 16px;
+  background-color: #2563eb;
+  color: #ffffff;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.registerButton:hover {
+  background-color: #1d4ed8;
+}
