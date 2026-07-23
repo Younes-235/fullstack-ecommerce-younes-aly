@@ -7,55 +7,21 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const verifyToken = async () => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                try {
-                    const response = await fetch('http://localhost:5000/api/profile', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    if (response.ok) {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        setUser({
-                            id: payload.id,
-                            username: payload.name,
-                            email: payload.email,
-                            role: payload.role
-                        });
-                    } else if (response.status === 401) {
-                        localStorage.removeItem('token');
-                        setUser(null);
-                    } else {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        setUser({
-                            id: payload.id,
-                            username: payload.name,
-                            email: payload.email,
-                            role: payload.role
-                        });
-                    }
-                } catch (error) {
-                    try {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        setUser({
-                            id: payload.id,
-                            username: payload.name,
-                            email: payload.email,
-                            role: payload.role
-                        });
-                    } catch (e) {
-                        localStorage.removeItem('token');
-                        setUser(null);
-                    }
-                }
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setUser({
+                    id: payload.id,
+                    username: payload.name,
+                    email: payload.email,
+                    role: payload.role
+                });
+            } catch (error) {
+                localStorage.removeItem('token');
             }
-            setLoading(false);
-        };
-
-        verifyToken();
+        }
+        setLoading(false);
     }, []);
 
     const login = (token) => {
