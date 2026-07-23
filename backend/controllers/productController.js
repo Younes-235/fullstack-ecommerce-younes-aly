@@ -2,6 +2,7 @@ const prisma = require('../config/db.js');
 const fs = require('fs');
 const path = require('path');
 const Feedback = require('../models/Feedback.js'); 
+const logActivity = require('../utils/logger.js');
 
 exports.getAllProducts = async (req, res) => {
     try {
@@ -112,6 +113,14 @@ exports.createProduct = async (req, res) => {
                 imageUrl 
             }
         });
+
+        await logActivity({
+            action: 'PRODUCT_CREATED',
+            user: req.user,
+            targetType: 'PRODUCT',
+            targetId: newProduct.id,
+            details: { name: newProduct.name, price: newProduct.price, category: newProduct.category }
+        });
         
         res.status(201).json({ message: "Product added successfully", product: newProduct });
     } catch (error) {
@@ -134,6 +143,14 @@ exports.updateProductStock = async (req, res) => {
             data: {
                 stock: parseInt(stock, 10)
             }
+        });
+
+        await logActivity({
+            action: 'PRODUCT_UPDATED',
+            user: req.user,
+            targetType: 'PRODUCT',
+            targetId: productId,
+            details: { newStock: updatedProduct.stock }
         });
 
         return res.status(200).json(updatedProduct);
@@ -172,6 +189,14 @@ exports.deleteProduct = async (req, res, next) => {
 
         const deletedProduct = await prisma.product.delete({
             where: { id: productId }
+        });
+
+        await logActivity({
+            action: 'PRODUCT_DELETED',
+            user: req.user,
+            targetType: 'PRODUCT',
+            targetId: productId,
+            details: { name: targetProduct.name }
         });
 
         return res.status(200).json({ 

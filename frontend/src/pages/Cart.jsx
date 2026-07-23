@@ -77,6 +77,13 @@ const Cart = () => {
 
     const handleCheckout = () => {
         if (!cart?.items) return;
+
+        const invalidItem = cart.items.find(item => item.isOutOfStock || item.exceedsStock);
+        if (invalidItem) {
+            alert(`Please adjust item quantities. "${invalidItem.product?.name || 'An item'}" exceeds current stock.`);
+            return;
+        }
+
         const orderItems = cart.items.map(item => ({
             productId: item.productId,
             quantity: item.quantity
@@ -108,6 +115,7 @@ const Cart = () => {
         );
     }
 
+    const hasStockIssue = cart.items.some(item => item.isOutOfStock || item.exceedsStock);
     const total = cart.items.reduce((sum, item) => sum + ((item.product?.price || 0) * item.quantity), 0);
 
     return (
@@ -115,53 +123,74 @@ const Cart = () => {
             <h2 className={styles.title}>Your shopping cart</h2>
             <div className={styles.list}>
                 {
-                    cart.items.map(item => (
-                        <div key={item.id} className={styles.item}>
-                            <div className={styles.itemDetails}>
-                                <span className={styles.itemName}>
-                                    {item.product?.name || "Product Unavailable"}
-                                </span>
+                    cart.items.map(item => {
+                        const stock = item.availableStock ?? 0;
+                        const isOutOfStock = item.isOutOfStock;
+                        const exceedsStock = item.exceedsStock;
+
+                        return (
+                            <div key={item.id} className={`${styles.item} ${isOutOfStock || exceedsStock ? styles.itemWarning : ''}`}>
+                                <div className={styles.itemDetails}>
+                                    <span className={styles.itemName}>
+                                        {item.product?.name || "Product Unavailable"}
+                                    </span>
+
+                                    {isOutOfStock && (
+                                        <p style={{ color: 'red', margin: '4px 0', fontSize: '0.85rem' }}>
+                                            ❌ Out of stock! Please remove this item to proceed.
+                                        </p>
+                                    )}
+                                    {!isOutOfStock && exceedsStock && (
+                                        <p style={{ color: 'orange', margin: '4px 0', fontSize: '0.85rem' }}>
+                                            ⚠️ Only {stock} left in stock. Please lower your quantity.
+                                        </p>
+                                    )}
+
+                                    <div className={styles.quantityControls}>
+                                        <button 
+                                            className={styles.qtyBtn}
+                                            onClick={() => handleQuantityChange(item, 'minus')}
+                                            disabled={updateQuantityMutation.isPending || removeItemMutation.isPending}
+                                        >
+                                            -
+                                        </button>
+                                        <span className={styles.itemMeta}>{item.quantity}</span>
+                                        <button 
+                                            className={styles.qtyBtn}
+                                            onClick={() => handleQuantityChange(item, 'plus')}
+                                            disabled={
+                                                updateQuantityMutation.isPending || 
+                                                removeItemMutation.isPending || 
+                                                item.quantity >= stock
+                                            }
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
                                 
-                                <div className={styles.quantityControls}>
+                                <div className={styles.itemActions}>
+                                    <span className={styles.price}>
+                                        ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                                    </span>
                                     <button 
-                                        className={styles.qtyBtn}
-                                        onClick={() => handleQuantityChange(item, 'minus')}
-                                        disabled={updateQuantityMutation.isPending || removeItemMutation.isPending}
+                                        className={styles.removeButton}
+                                        onClick={() => removeItemMutation.mutate(item.productId)}
+                                        disabled={removeItemMutation.isPending}
                                     >
-                                        -
-                                    </button>
-                                    <span className={styles.itemMeta}>{item.quantity}</span>
-                                    <button 
-                                        className={styles.qtyBtn}
-                                        onClick={() => handleQuantityChange(item, 'plus')}
-                                        disabled={updateQuantityMutation.isPending || removeItemMutation.isPending}
-                                    >
-                                        +
+                                        {removeItemMutation.isPending ? 'Removing...' : 'Remove'}
                                     </button>
                                 </div>
                             </div>
-                            
-                            <div className={styles.itemActions}>
-                                <span className={styles.price}>
-                                    ${((item.product?.price || 0) * item.quantity).toFixed(2)}
-                                </span>
-                                <button 
-                                    className={styles.removeButton}
-                                    onClick={() => removeItemMutation.mutate(item.productId)}
-                                    disabled={removeItemMutation.isPending}
-                                >
-                                    {removeItemMutation.isPending ? 'Removing...' : 'Remove'}
-                                </button>
-                            </div>
-                        </div>
-                    ))
+                        );
+                    })
                 }
                 <div className={styles.checkoutRow}>
                     <div className={styles.total}>Total: ${total.toFixed(2)}</div>
                     <button 
                         onClick={handleCheckout} 
                         className={styles.checkoutButton}
-                        disabled={checkoutMutation.isPending}
+                        disabled={checkoutMutation.isPending || hasStockIssue}
                     >
                         {checkoutMutation.isPending ? 'Processing...' : 'Complete Order'}
                     </button>

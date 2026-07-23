@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const logActivity = require("../utils/logger");
 
 exports.createOrder = async (req, res) => {
     try {
@@ -60,6 +61,18 @@ exports.createOrder = async (req, res) => {
         await prisma.cart.update({
             where: { customerEmail },
             data: { items: { deleteMany: {} } }
+        });
+
+        await logActivity({
+            action: 'ORDER_PLACED',
+            user: req.user,
+            targetType: 'ORDER',
+            targetId: finalizedOrder.id,
+            details: {
+                totalAmount: finalizedOrder.totalAmount,
+                itemsCount: finalizedOrder.items.length,
+                customerEmail
+            }
         });
 
         res.status(201).json({

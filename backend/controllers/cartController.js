@@ -10,17 +10,36 @@ exports.addToCart = async (req, res) => {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-        const prodId = parseInt(productId), quan = parseInt(quantity);
+        const prodId = parseInt(productId, 10);
+        const quan = parseInt(quantity, 10);
         
         const product = await prisma.product.findUnique({ where: { id: prodId } });
         if (!product) return res.status(404).json({ error: "Product not found" });
-        if (product.stock < quan) return res.status(400).json({ error: "Not enough stock available." });
+
+        if (product.stock <= 0) {
+            return res.status(400).json({ error: "This product is currently out of stock." });
+        }
 
         const cart = await prisma.cart.upsert({
             where: { customerEmail: customerEmail },
             update: {},
             create: { customerEmail: customerEmail }
         });
+
+        const existingItem = await prisma.cartItem.findUnique({
+            where: {
+                cartId_productId: { cartId: cart.id, productId: prodId }
+            }
+        });
+
+        const currentInCart = existingItem ? existingItem.quantity : 0;
+        const requestedTotal = currentInCart + quan;
+
+        if (product.stock < requestedTotal) {
+            return res.status(400).json({ 
+                error: `Cannot add ${quan} more. You already have ${currentInCart} in your cart, and only ${product.stock} are available.` 
+            });
+        }
 
         const cartItem = await prisma.cartItem.upsert({
             where: {
@@ -42,7 +61,7 @@ exports.addToCart = async (req, res) => {
         console.error("Add to cart error details:", error); 
         res.status(500).json({ error: "Failed to update shopping cart." });
     }
-}
+};
 
 // GET /api/cart
 exports.getCart = async (req, res) => {
@@ -59,12 +78,29 @@ exports.getCart = async (req, res) => {
         });
 
         if (!cart) return res.status(200).json({ items: [] });
-        res.status(200).json(cart);
+
+        const validatedItems = cart.items.map(item => {
+            const stock = item.product?.stock ?? 0;
+            const isOutOfStock = stock <= 0;
+            const exceedsStock = item.quantity > stock;
+
+            return {
+                ...item,
+                isOutOfStock,
+                exceedsStock,
+                availableStock: stock
+            };
+        });
+
+        res.status(200).json({
+            ...cart,
+            items: validatedItems
+        });
     } catch (error) {
         console.error("Get cart error details:", error);
         res.status(500).json({ error: "Failed to retrieve cart data." });
     }
-}
+};
 
 // PUT /api/cart/:productId
 exports.updateCartQuantity = async (req, res) => {
@@ -87,6 +123,11 @@ exports.updateCartQuantity = async (req, res) => {
 
         const product = await prisma.product.findUnique({ where: { id: prodId } });
         if (!product) return res.status(404).json({ error: "Product not found" });
+
+        if (product.stock <= 0) {
+            return res.status(400).json({ error: "This product is currently out of stock." });
+        }
+
         if (product.stock < newQuantity) {
             return res.status(400).json({ error: `Only ${product.stock} units are left in stock.` });
         }

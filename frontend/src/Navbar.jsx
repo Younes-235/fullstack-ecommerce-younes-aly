@@ -30,7 +30,10 @@ export default function Navbar() {
         )}
 
         {user?.role === "admin" && (
-          <Link to="/admin" className={styles.adminLink}>Admin Settings</Link>
+          <>
+            <Link to="/admin" className={styles.adminLink}>Admin Settings</Link>
+            <Link to="/admin/logs" className={styles.adminLink}>Activity Logs</Link>
+          </>
         )}
       </div>
 

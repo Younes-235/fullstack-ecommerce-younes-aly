@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 const Feedback = require('../models/Feedback'); 
+const ActivityLog = require('../models/ActivityLog'); 
 
 async function main() {
   console.log('🌱 Starting database seeding...');
@@ -21,7 +22,9 @@ async function main() {
   await prisma.cart.deleteMany({});
   await prisma.product.deleteMany({});
   await prisma.user.deleteMany({});
+
   await Feedback.deleteMany({});
+  await ActivityLog.deleteMany({});
 
   console.log('👤 Seeding users (Customer & Admin)...');
   const hashedCustomerPassword = await bcrypt.hash("password123", 10);

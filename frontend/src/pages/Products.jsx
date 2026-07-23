@@ -21,7 +21,6 @@ const Products = () => {
     const [editingProductId, setEditingProductId] = useState(null);
     const [stockInput, setStockInput] = useState('');
     
-    // Track which specific product ID is currently adding to cart
     const [addingProductId, setAddingProductId] = useState(null);
 
     const { data: categories = [] } = useQuery({
@@ -81,6 +80,7 @@ const Products = () => {
         onSuccess: (updatedProduct) => {
             queryClient.invalidateQueries({ queryKey: ['products'] });
             queryClient.invalidateQueries({ queryKey: ['product', String(updatedProduct.id)] });
+            queryClient.invalidateQueries({ queryKey: ['cart'] });
             queryClient.invalidateQueries({ queryKey: ['adminStats'] });
             setEditingProductId(null);
             setStockInput('');

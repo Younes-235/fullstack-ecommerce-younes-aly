@@ -64,6 +64,7 @@ const ProductDetail = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['product', id] });
             queryClient.invalidateQueries({ queryKey: ['products'] });
+            queryClient.invalidateQueries({ queryKey: ['cart'] });
             queryClient.invalidateQueries({ queryKey: ['adminStats'] });
             setIsEditingStock(false);
         },

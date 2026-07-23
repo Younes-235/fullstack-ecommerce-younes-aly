@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const prisma = require("../config/db")
+const prisma = require("../config/db");
 const sendWelcomeEmail = require("../utils/welcomeEmail");
+const logActivity = require("../utils/logger");
 
 exports.login = async (req, res) => {
     try {
@@ -30,7 +31,7 @@ exports.login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role , name:user.name},
+            { id: user.id, email: user.email, role: user.role, name: user.name },
             process.env.JWT_SECRET || "fallback_secret",
             { expiresIn: "24h" }
         );
@@ -74,8 +75,20 @@ exports.register = async (req, res) => {
 
         sendWelcomeEmail(newUser.email, newUser.name);
 
+        await logActivity({
+            action: 'USER_REGISTERED',
+            user: { 
+                id: String(newUser.id), 
+                email: newUser.email, 
+                role: newUser.role 
+            },
+            targetType: 'USER',
+            targetId: newUser.id,
+            details: { name: newUser.name, email: newUser.email, role: newUser.role }
+        });
+
         const token = jwt.sign(
-            { id: newUser.id, email: newUser.email, role: newUser.role , name:newUser.name},
+            { id: newUser.id, email: newUser.email, role: newUser.role, name: newUser.name },
             process.env.JWT_SECRET || "fallback_secret",
             { expiresIn: "24h" }
         );
